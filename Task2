@@ -1,0 +1,304 @@
+Got it. Here are the modifications with the inside code keywords changed:
+
+```markdown
+# Movie Rating Prediction with Python
+
+## Introduction
+The Movie Rating Prediction project involves building a model that predicts the rating of a movie based on features like genre, director, and actors. We use regression techniques to tackle this exciting problem. This enables us to explore data analysis, preprocessing, feature engineering, and machine learning modeling techniques.
+
+## Goal
+The main goal of this project is to analyze historical movie data and develop a model that accurately estimates the rating given to a movie by users or critics. By doing so, we aim to provide insights into the factors that influence movie ratings and create a model that can estimate the ratings of movies accurately.
+
+## Quick Link
+Dataset: Movie Rating Prediction Dataset
+
+## Technologies Used
+- Python
+- Jupyter Notebook
+- Libraries: pandas, numpy, scikit-learn, seaborn, and matplotlib
+
+## Project Steps
+
+### 1. Importing Libraries
+```python
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LinearRegression
+from sklearn.metrics import r2_score
+from sklearn.neighbors import KNeighborsRegressor
+```
+
+### 2. Reading Data
+```python
+# Read the dataset into a dataframe
+movies_df = pd.read_csv("movies.csv", encoding='latin1')
+# Show first five records of dataframe
+movies_df.head()
+```
+
+### 3. Data Preprocessing
+```python
+# Show the number of records and observations in the dataframe
+movies_df.shape
+
+# Check out the information on the dataframe
+movies_df.info()
+
+# Check out the missing values in each observation
+movies_df.isna().sum()
+
+# Drop records with missing value in any of the following columns: Name, Year, Duration, Votes, Rating
+movies_df.dropna(subset=['Name', 'Year', 'Duration', 'Votes', 'Rating'], inplace=True)
+
+# Check the missing values in each observation again
+movies_df.isna().sum()
+
+# Remove rows with duplicate movie records
+movies_df.drop_duplicates(subset=['Name', 'Year', 'Director'], keep='first', inplace=True)
+
+# Remove () from the Year column values and change the datatype to integer
+movies_df['Year'] = movies_df['Year'].str.strip('()').astype(int)
+
+# Remove minutes from the Duration column values
+movies_df['Duration'] = movies_df['Duration'].str.replace(r' min', '').astype(int)
+
+# Remove commas from Votes column and convert to integer
+movies_df['Votes'] = movies_df['Votes'].str.replace(',', '').astype(int)
+
+# Show the number of records and observations after cleaning the dataframe
+movies_df.shape
+
+# Show the info on the cleaned dataframe
+movies_df.info()
+
+# Show the statistics of the dataframe
+movies_df.describe()
+```
+
+### 4. Exploratory Data Analysis (EDA)
+#### i. Number of Movies each Year
+```python
+# Group the data by Year and count the number of movies in each year
+movies_per_year = movies_df['Year'].value_counts().sort_index()
+
+# Create a bar chart
+plt.figure(figsize=(18, 9))
+bars = plt.bar(movies_per_year.index, movies_per_year.values, color='darkred')
+plt.xlabel('Year')
+plt.ylabel('Number of Movies')
+plt.title('Number of Movies Released Each Year')
+
+# Show every second year on the x-axis and rotate x-labels for better readability
+plt.xticks(movies_per_year.index[::2], rotation=90)
+
+for bar in bars:
+    xval = bar.get_x() + bar.get_width() / 2
+    yval = bar.get_height()
+    plt.text(xval, yval, int(yval), ha='center', va='bottom', rotation=90)
+
+plt.show()
+```
+
+#### ii. Creating Genre Dummy Columns and Analyzing Movie Counts by Genre
+```python
+# Create dummy columns for each genre
+genre_dummies = movies_df['Genre'].str.get_dummies(', ')
+# Creating a new dataframe which combines movies_df and genre_dummies
+movies_df_genre = pd.concat([movies_df, genre_dummies], axis=1)
+
+genre_columns = movies_df_genre.columns[10:]  # Assuming genre columns start from the 11th column
+
+# Group the data by genre_columns and count the number of movies in each genre
+movies_per_genre = movies_df_genre[genre_columns].sum().sort_index()
+
+# Create a bar chart
+plt.figure(figsize=(18, 9))
+bars = plt.bar(movies_per_genre.index, movies_per_genre.values, color='darkred')
+plt.xlabel('Genre')
+plt.ylabel('Number of Movies')
+plt.title('Number of Movies Released Per Genre')
+
+plt.xticks(rotation=90)  
+
+for bar in bars:
+    xval = bar.get_x() + bar.get_width() / 2
+    yval = bar.get_height()
+    plt.text(xval, yval, int(yval), ha='center', va='bottom')
+
+plt.show()
+```
+
+#### iii. Top 20 Directors with the Most Movies
+```python
+# Analyzing count of movies of each director
+movies_per_director = movies_df['Director'].value_counts()
+
+# Create a bar chart
+plt.figure(figsize=(10, 5))
+bars = movies_per_director.head(20).plot(kind='bar', color='maroon')
+plt.xlabel('Director')
+plt.ylabel('Number of Movies')
+plt.title('Top 20 Directors with the Most Movies')
+plt.xticks(rotation=90) 
+
+# Add count labels on top of the bars
+for bar in bars.patches:
+    xval = bar.get_x() + bar.get_width() / 2
+    yval = bar.get_height()
+    plt.text(xval, yval, int(yval), ha='center', va='bottom')
+
+plt.show()
+```
+
+#### iv. Top 20 Actors with the Most Movies
+```python
+# To Count Top 20 movies for each actor
+movies_per_actor = movies_df['Actor 1'].value_counts()
+
+# Create a bar chart
+plt.figure(figsize=(10, 5))
+bars = movies_per_actor.head(20).plot(kind='bar', color='maroon')
+plt.xlabel('Actors')
+plt.ylabel('Number of Movies')
+plt.title('Top 20 Actors with the Most Movies')
+plt.xticks(rotation=90) 
+
+# Add count labels on top of the bars
+for bar in bars.patches:
+    xval = bar.get_x() + bar.get_width() / 2
+    yval = bar.get_height()
+    plt.text(xval, yval, int(yval), ha='center', va='bottom')
+
+plt.show()
+```
+
+#### v. Movie Duration vs. Rating Scatter Plot
+```python
+plt.figure(figsize=(20, 8))
+# Create a scatter plot with Duration and Rating relationship
+sns.scatterplot(x=movies_df['Duration'], y=movies_df['Rating'], color='maroon')
+plt.xlabel('Duration of Movie (mins)')
+plt.ylabel('Movie Rating')
+plt.title('Movie Duration vs Rating')
+plt.show()
+```
+
+### 5. Feature Engineering
+```python
+# Dropping the columns from the dataframe since these are the least dependable observations for target variable 'Rating'
+movies_df.drop(['Name', 'Director', 'Actor 1', 'Actor 2', 'Actor 3'], axis=1, inplace=True)
+# Show first five records of the dataframe
+movies_df.head()
+
+# Creating target variable and learning observations for the model
+X_features = movies_df[['Year', 'Duration', 'Votes']]
+y_target = movies_df['Rating']
+
+# Split the data into training and testing sets
+X_train, X_test, y_train, y_test = train_test_split(X_features, y_target, test_size=0.2, random_state=231)
+```
+
+### 6. Machine Learning Modeling Techniques
+
+#### i. Linear Regression Model
+```python
+# Creating a linear regression model
+linear_model = LinearRegression()
+
+# Training the data on linear regression model
+linear_model.fit(X_train, y_train)
+
+# Predicting the test data on trained model
+linear_predictions = linear_model.predict(X_test)
+
+# Evaluating linear regression model
+r2(y_test, linear_predictions)
+```
+
+#### ii. K-Nearest Neighbors (KNN) Regression Model
+```python
+# Creating a range for number of neighbors parameter of the KNN model
+k_range = range(1, 40, 1)
+
+# Creating an empty scores list
+knn_scores = []
+
+# Iterate every value in k_range list 
+for k in k_range:
+    # Create a K Nearest Neighbor model with k as number of neighbors
+    knn_model = KNeighborsRegressor(n_neighbors=k)
+    
+    # Fit training data to the KNN model
+    knn_model.fit(X_train, y_train)
+    # Evaluate the model
+    knn_predictions = knn_model.predict(X_test)
+    
+    # Append the regression score for evaluation of the model to knn_scores
+    knn_scores.append(r2(y_test, knn_predictions))
+
+plt.figure(figsize=(12, 8))
+# Create a line graph for showing regression score (knn_scores) for respective number of neighbors used in the KNN model
+plt.plot(k_range, knn_scores, linewidth=2, color='green')
+# Values for x-axis should be the number of neighbors stored in k_range
+plt.xticks(k_range)
+plt.xlabel('Neighbor Number')
+plt.ylabel('r2_Score of KNN')
+plt.show()
+
+# Creating a KNN model with best parameters i.e., number of neighbors = 23
+best_knn_model = KNeighborsRegressor(n_neighbors=23)
+
+# Fit training data to the KNN model
+best_knn_model.fit(X_train,
+
+ y_train)
+# Evaluate test data on the model
+best_knn_predictions = best_knn_model.predict(X_test)
+# Show regression score
+r2(y_test, best_knn_predictions)
+```
+
+#### iii. SGD Regression
+```python
+from sklearn.linear_model import SGDRegressor
+
+# Create an instance of the SGDRegressor
+sgd_model = SGDRegressor(max_iter=100, random_state=1)  # You can adjust the max_iter and random_state
+
+# Fit the model to your training data
+sgd_model.fit(X_train, y_train)
+
+# Make predictions
+sgd_predictions = sgd_model.predict(X_test)
+
+# Evaluate the model
+sgd_r2 = r2(y_test, sgd_predictions)
+
+print("R-squared score:", sgd_r2)
+```
+
+#### iv. Random Forest Regression
+```python
+from sklearn.ensemble import RandomForestRegressor
+
+rf_model = RandomForestRegressor(n_estimators=100, random_state=1)
+rf_model.fit(X_train, y_train)
+rf_predictions = rf_model.predict(X_test)
+rf_r2 = r2(y_test, rf_predictions)
+print(f'R-squared score (Random Forest): {rf_r2}')
+```
+
+#### v. Gradient Boosting Regression
+```python
+from sklearn.ensemble import GradientBoostingRegressor
+
+gb_model = GradientBoostingRegressor(n_estimators=100, random_state=231)
+gb_model.fit(X_train, y_train)
+gb_predictions = gb_model.predict(X_test)
+gb_r2 = r2(y_test, gb_predictions)
+print(f'R-squared score: {gb_r2}')
+```
+```
